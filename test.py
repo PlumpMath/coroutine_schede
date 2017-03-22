@@ -77,6 +77,7 @@ class Net:
         self._ready.append(handle)
 
     def run_once(self):
+        pass
 
 
 
