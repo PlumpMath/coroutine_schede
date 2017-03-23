@@ -14,4 +14,7 @@ sk.sendall(bytes('yaoyao','utf8'))
 #打印接受的数据
 #print (str(server_reply,'utf8'))
 #关闭连接
+import time
+time.sleep(10)
+sk.send(bytes("hello world again", 'utf-8'))
 sk.close()
