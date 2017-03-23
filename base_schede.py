@@ -17,6 +17,10 @@ class future:
         self._result = d
         for i in self.call_backs:
             self.loop.call_soon(i)
+        self.done = True
+
+    def set_exception(self, exc):
+        print("exc", exc)
 
     def __await__(self):
         if not self.done:
@@ -51,8 +55,16 @@ class Loop:
 
     def for_ever(self):
         while True:
-            if self._ready:
-                print("all task", self._ready)
+            # print("aa")
+            events = self.selector.select()
+            for key, mask in events:
+                print("key sock:", key.fileobj)
+                callback = key.data
+                #callback(key.fileobj, mask)
+                self._ready.append(callback)
+            # if self._ready:
+                #print("all task", self._ready)
+            while self._ready:
                 fn = self._ready.popleft()
                 print("fn", fn)
                 fn()
@@ -62,6 +74,9 @@ class Loop:
         #    nonlocal self
         task = Task(task, self)
         self._ready.append(task.step)
+
+    def set_selector(self, selector):
+        self.selector = selector
 
 
 
@@ -100,31 +115,25 @@ class Task:
         self.loop = loop
 
     def step(self):
-        print("step run")
         try:
-            print("why ")
             result = self.core.send(None)
-            print("NO RUN")
         except StopIteration as ex:
-            print('stop ***')
             return
         else:
             if result is None:
-                print("none")
                 self.loop.call_soon(self.step)
             elif isinstance(result, future):
-                print("wake up, and result", result)
-                # result.add_done_callback(self.wake_up)
-                self.loop.call_soon(self.wake_up)
+                if result.done is False:
+                    result.add_done_callback(self.step)
+                else:
+                    self.loop.call_soon(self.step)
             else:
-                print("\nthis is other result: ", result)
+                result.set_exception("can not handle, runtime error")
 
     def wake_up(self):
-        print("send wake up", self.core)
         try:
-            self.core.send(None)
+            result = self.core.send(None)
         except StopIteration as ex:
-            # print(ex.value)
             pass
 
 
@@ -134,7 +143,8 @@ class Task:
 loop = Loop()
 if __name__ == '__main__':
     from schede_serve import Net
-    Net(loop)
+    obj = Net(loop)
+    loop.set_selector(obj._selector)
     # loop.as_complete()
     loop.for_ever()
     # a = http_read()

@@ -8,13 +8,18 @@ sk = socket.socket()
 #请求连接服务端
 sk.connect(ip_port)
 #发送数据
+import time
+time.sleep(
+    0
+)
 sk.sendall(bytes('yaoyao','utf8'))
 #接受数据
 #server_reply = sk.recv(1024)
 #打印接受的数据
 #print (str(server_reply,'utf8'))
 #关闭连接
-import time
-time.sleep(10)
-sk.send(bytes("hello world again", 'utf-8'))
+#import time
+#time.sleep(10)
+#sk.send(bytes("hello world again", 'utf-8'))
+
 sk.close()
