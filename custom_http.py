@@ -3,10 +3,6 @@
 implement the http parser
 """
 class CIDict(dict):
-    """Case Insensitive dict where all keys are converted to lowercase
-    This does not maintain the inputted case when calling items() or keys()
-    in favor of speed, since headers are case insensitive
-    """
 
     def get(self, key, default=None):
         return super().get(key.casefold(), default)
