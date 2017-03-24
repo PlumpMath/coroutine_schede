@@ -55,11 +55,8 @@ class HttpProtocol:
         )
 
     def on_body(self, body):
-        print("before body: **", body)
         self.request.body.append(body)
 
     def on_message_complete(self):
         if self.request.body:
             self.request.body = b''.join(self.request.body)
-
-        print("body", self.request.body, self.request.headers)

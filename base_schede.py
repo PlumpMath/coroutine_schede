@@ -24,9 +24,7 @@ class future:
 
     def __await__(self):
         if not self.done:
-            print("ggg")
             yield self
-        print("wait over")
         return self.result()
 
 

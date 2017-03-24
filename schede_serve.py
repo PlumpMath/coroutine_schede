@@ -29,7 +29,6 @@ class NetServer(HttpProtocol):
         self.loop.call_soon(task.step)
 
     async def make_response(self, sock, request, response):
-        print("start sned*****************")
         fut = future(self.loop)
         # this fut obj is less useful otherwise you have to generate a new task
         self.add_writer(sock, self.send, fut, sock, response)
@@ -86,13 +85,10 @@ class NetServer(HttpProtocol):
         data = await fut
 
         self.parser = HttpRequestParser(self)
-        print("\n\nget data: ", data, type(data))
         self.parser.feed_data(data)
 
         response = self.handle_request(self.request)
         await self.make_response(conn, self.request, response)
-
-        # print("version: ", self.parser.get_http_version())
 
         self.remove_reader(conn)
 
@@ -106,11 +102,9 @@ class NetServer(HttpProtocol):
             sock.close()
 
     def send(self, fut, sock, send_data):
-        print("start send===================")
         try:
             data = sock.send(send_data)
         except (BlockingIOError, InterruptedError):
-            print("send ))))")
             self.add_writer(sock, self.send, fut, sock, send_data)
         except Exception as exc:
             fut.set_exception(exc)
@@ -118,7 +112,6 @@ class NetServer(HttpProtocol):
             fut.set_result(data)
 
     def recv(self, fut, sock, n):
-        print("start recv")
         try:
             data = sock.recv(n)
         except (BlockingIOError, InterruptedError):
