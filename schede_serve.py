@@ -141,14 +141,11 @@ class NetServer(HttpProtocol):
             self._selector.modify(fd, selectors.EVENT_READ, handle)
 
     def add_writer(self, sock, fn, *args):
-        print("sock: ", sock)
         fd = sock.fileno()
         handle = CusHandle(fn, args, self)
-        print("register writeer")
         try:
             key = self._selector.get_key(fd)
         except KeyError:
-            print("not register")
             self._selector.register(fd, selectors.EVENT_WRITE,
                                     handle)
         else:
