@@ -30,52 +30,18 @@ class NetServer(HttpProtocol):
 
     async def make_response(self, sock, request, response):
         fut = future(self.loop)
-        # this fut obj is less useful otherwise you have to generate a new task
         self.add_writer(sock, self.send, fut, sock, response)
         await fut
 
-    def _parse_headers(self, data):
-        headers = b''
-        for name, value in data.items():
-            try:
-                headers += (
-                    b'%b: %b\r\n' % (
-                        name.encode(), value.encode('utf-8')))
-            except AttributeError:
-                headers += (
-                    b'%b: %b\r\n' % (
-                        str(name).encode(), str(value).encode('utf-8')))
-
-        return headers
 
     def handle_request(self, request):
-        version = '1.1'
-        status = 200
-        keep_alive = False
-        timeout_header = b''
-        headers = {}
-        headers['Transfer-Encoding'] = 'chunked'
-        #f "Content-Length" in headers:
-        #headers.pop('Content-Length', None)
-        headers['Content-Length'] = len(b'test for shawn')
-        headers['Content-Type'] = 'text/plain'
+        from .custom_http import Response
+        """ In here, Web server Logical service.
+            Router and request handle.
+        """
+        obj = Response(body="hello world", content_type='text/plain')
+        return obj.output()
 
-        headers= self._parse_headers(self.request.headers)
-        self.body = b'test for shawn'
-
-        return (b'HTTP/%b %d %b\r\n'
-                b'Connection: %b\r\n'
-                b'%b'
-                b'%b\r\n'
-                b'%b') % (
-                   version.encode(),
-                   status,
-                   b'OK',
-                   b'keep-alive' if keep_alive else b'close',
-                   timeout_header,
-                   headers,
-                   self.body
-               )
 
     async def accept2(self, sock):
         fut = future(self.loop)
@@ -142,5 +108,5 @@ class NetServer(HttpProtocol):
             self._selector.register(fd, selectors.EVENT_WRITE,
                                     handle)
         else:
-            mask, reader= key.events, key.data
+            mask, writer= key.events, key.data
             self._selector.modify(fd, selectors.EVENT_WRITE, handle)
