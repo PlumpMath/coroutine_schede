@@ -35,7 +35,7 @@ class NetServer(HttpProtocol):
 
 
     def handle_request(self, request):
-        from .custom_http import Response
+        from custom_http import Response
         """ In here, Web server Logical service.
             Router and request handle.
         """
@@ -47,12 +47,12 @@ class NetServer(HttpProtocol):
         fut = future(self.loop)
         conn, addr = sock.accept()  # Should be ready
         conn.setblocking(False)
-        self.recv(fut, conn, 1000)
+        self.recv(fut, conn, 1024*1024*10)
         data = await fut
-
+        print("\ndata:", type(data), '\n', data, '\n')
         self.parser = HttpRequestParser(self)
         self.parser.feed_data(data)
-
+        print('recive data: ', self.request.body)
         response = self.handle_request(self.request)
         await self.make_response(conn, self.request, response)
 

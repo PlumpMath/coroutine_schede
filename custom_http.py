@@ -102,6 +102,7 @@ class Response:
             data = data
         else:
             raise TypeError("body only accept str or bytes object")
+        return data
 
     def __init__(self, body=None, status=200,
                  headers=None, content_type='text/pain', cookies=None):
@@ -109,6 +110,7 @@ class Response:
             self.body = b''
         else:
             self.body = self.__encode_body(body)
+        print("get data:", self.body)
         self.status = status
         self.headers = headers or {}
         self._cookies = CookieJar(self.headers)
@@ -135,6 +137,7 @@ class Response:
         为兼容浏览器，所以会保留connect=keep-alive,
         """
         timeout_header = b''
+        print("debug: ", self.body)
         if keep_alive and keep_alive_timeout is not None:
             timeout_header = b'Keep-Alive: %d\r\n' % keep_alive_timeout
         self.headers['Content-Length'] = self.headers.get(
