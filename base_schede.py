@@ -24,9 +24,7 @@ class future:
 
     def __await__(self):
         if not self.done:
-            print("ggg")
             yield self
-        print("wait over")
         return self.result()
 
 
@@ -44,68 +42,32 @@ class CusHandle:
 
 
 class Loop:
-    def __init__(self):
+    def __init__(self, selector=None):
         self._ready = deque()
-        # self.selector = selector
-        # self._selector = selectors.DefaultSelector()
-        # self._selector.register(sys.stdin, selectors.EVENT_READ)
+        self.selector = None
 
     def call_soon(self, fn):
         self._ready.append(fn)
 
     def for_ever(self):
+        if self.selector is None:
+            raise RuntimeError("you should init a selector fro Loop")
         while True:
-            # print("aa")
             events = self.selector.select()
             for key, mask in events:
-                print("key sock:", key.fileobj)
                 callback = key.data
-                #callback(key.fileobj, mask)
                 self._ready.append(callback)
-            # if self._ready:
-                #print("all task", self._ready)
+
             while self._ready:
                 fn = self._ready.popleft()
-                print("fn", fn)
                 fn()
 
     def as_complete(self, task):
-        #def map_f(fn):
-        #    nonlocal self
         task = Task(task, self)
         self._ready.append(task.step)
 
     def set_selector(self, selector):
         self.selector = selector
-
-
-
-
-def aa(fut, fn):
-    while True:
-        print("please input %s: " )
-        a = int(fn())
-        print("input is %d" % (a))
-        if a == 10:
-            break
-    fut.set_result("test data")
-
-
-async def http_read():
-    print("start so early")
-    fut = future(loop)
-    flag = 25
-    aa(fut, input)
-    # print("gggggg")
-    data = await fut
-    # print("last  data", data)
-    return data
-
-
-async def request_handler():
-    data = await http_read()
-    print("\n\ndata*", data)
-    return data
 
 
 class Task:
@@ -134,28 +96,14 @@ class Task:
         try:
             result = self.core.send(None)
         except StopIteration as ex:
-            pass
-
-
-
+            print("wake up exception: ", ex.value)
 
 
 loop = Loop()
 if __name__ == '__main__':
-    from schede_serve import Net
-    obj = Net(loop)
+    from schede_serve import NetServer
+    obj = NetServer(loop)
     loop.set_selector(obj._selector)
-    # loop.as_complete()
     loop.for_ever()
-    # a = http_read()
-    # a.send(None)
-    # print(type(a))
-    # a = http_read()
-    # print("send")
-    # a.send(None)
-    # print("send 2 ")
-    # try:
-    #     ret = a.send(None)
-    # except StopIteration as ex:
-    #     print(ex.value)
+
 
