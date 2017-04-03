@@ -1,4 +1,6 @@
 # asycio dispatch with httpserver
+* 实现了asyncio 对coroutine 调度。
+* 实现了一个基于上述调度算法的http web server
 
 ## what is the async、await
 
